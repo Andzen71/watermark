@@ -15,45 +15,32 @@ import (
 
 // ApplyWatermark применяет водяной знак к изображению и возвращает новое изображение
 func ApplyWatermark(imgReader io.Reader) (io.Reader, error) {
-	// Читаем изображение
-	// fmt.Println("В http:", imgReader)
-	fmt.Println("yes")
-	fmt.Println(imgReader)
-	img, imageType, err := image.Decode(imgReader)
-	// fmt.Println(img)
-	fmt.Println(imageType)
+	// Читаем полученное изображение
+	img, _, err := image.Decode(imgReader)
 	if err != nil {
 		fmt.Println("cant't decode image", err)
 		return nil, err
 	}
 
-	fileInfo, err := os.Stat("watermark/watermark.png")
-	if err != nil {
-		fmt.Println("Ошибка при получении информации о файле:", err)
-		return nil, err
-	}
+	// Создаем водяной знак (здесь предполагается, что watermark.png находится в watermark каталоге относительно main файла)
 
-	fmt.Println("yes1")
-	fmt.Println(fileInfo)
-
-	// Создаем водяной знак (здесь предполагается, что watermark.png находится в том же каталоге, что и main файл)
+	// Открываем файл с водяным знаком (существует ли файл вообще)
 	watermarkFile, err := os.Open("watermark/watermark.png")
 	if err != nil {
 		return nil, err
 	}
 	defer watermarkFile.Close()
 
+	// Читаем файл с водяным знаком (Этот файл целый и не пустой?)
 	watermarkBytes, err := ioutil.ReadAll(watermarkFile)
 	if err != nil {
 		fmt.Println("Ошибка чтения файла:", err)
 		return nil, err
 	}
-
 	reader := bytes.NewReader(watermarkBytes)
 
+	// Декодируем файл с водяным знаком (Этот файл - картинка?)
 	watermarkImg, _, err := image.Decode(reader)
-	fmt.Println(watermarkImg)
-	// fmt.Println(watermarkImgType)
 	if err != nil {
 		fmt.Println("can't decode watermark image")
 		return nil, err
