@@ -19,7 +19,7 @@ func main() {
 	use_available_command := false
 
 	if len(os.Args) < 2 {
-		fmt.Println("Please, use available commands 'server', 'watermark' or use '--help'")
+		fmt.Println("Please, use available commands", available_commands)
 		return
 	}
 
@@ -31,7 +31,7 @@ func main() {
 	}
 
 	if !use_available_command {
-		fmt.Println("No command", os.Args[1], ". Please, use available commands 'server', 'watermark' or use '--help'")
+		fmt.Println("No command", os.Args[1], ". Please, use available commands", available_commands)
 	}
 
 	if os.Args[1] == "server" {
@@ -50,6 +50,7 @@ func main() {
 			// this is the problem of os.Args. It is hard to do that order of args is not important
 			fmt.Println("path to image that should be watermarked")
 			fmt.Println("path to watermarked image")
+			return
 		}
 
 		var input_path string = os.Args[2]
