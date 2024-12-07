@@ -13,7 +13,7 @@ curl -X POST -F "image=@perf1.png" http://localhost:8080/watermark > watermarked
 Команда для отправки картинки на сервер через тело (как я хочу)
 
 ```bash
- curl localhost:8081/watermark -X POST --data-binary "@perf1.png" --output file.png -H "Content-type: image/png"
+ curl localhost:8080/watermark -X POST --data-binary "@perf1.png" --output file.png -H "Content-type: image/png"
 ```
 
 Заголовки нужны потому, что без них курл отправляет картинку с таким заголовком `Content-Type: application/octet-stream`
