@@ -11,12 +11,15 @@ import (
 )
 
 func main() {
+	http.HandleFunc("/nikita", nikitaHandler)
 
 	http.HandleFunc("/watermark", WatermarkHandler)
 	fmt.Println("Server is running on :8080")
 	http.ListenAndServe(":8080", nil)
 }
-
+func nikitaHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello ebat\n")
+}
 func WatermarkHandler(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method != http.MethodPost {
