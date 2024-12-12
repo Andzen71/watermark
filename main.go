@@ -42,6 +42,8 @@ func WatermarkHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Кодируем картинку в вид .png(я вообще не вдупляю что происходит, я запутался)
+
 	// Отправляем водяной знак в ответе
 	w.Header().Set("Content-Type", "image/png")
 	if _, err := io.Copy(w, watermarkedImage); err != nil {
