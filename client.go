@@ -6,12 +6,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"image"
+	"image/png"
 )
 
 func main() {
 
 	// Куда будем отправлять запрос
-	url := "http://localhost:8081/watermark"
+	url := "http://localhost:8080/watermark"
 
 	// Открываем картинку, которую будем отправлять (она вообще есть?)
 	file, err := os.Open("perf1.png")
@@ -48,6 +50,16 @@ func main() {
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(err)
+	}
+	// Тут мы должны получить картинку с сервера в виде image.png
+
+	// Локально сохраняем картинку с водяным знаком
+	img, image.Image, filename string {
+  file, err := os.Create(filename)
+  if err != nil {
+		fmt.Println(err)
+	}
+  defer res.Body.Close()
 	}
 
 	// Дополнительно выводим ответ и тело ответа (в формате строки)
