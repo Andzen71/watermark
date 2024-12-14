@@ -11,7 +11,7 @@ import (
 func main() {
 
 	// Куда будем отправлять запрос
-	url := "http://localhost:8081/watermark"
+	url := "http://localhost:8080/watermark"
 
 	// Открываем картинку, которую будем отправлять (она вообще есть?)
 	file, err := os.Open("perf1.png")
