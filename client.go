@@ -60,8 +60,4 @@ func main() {
 	// Записываем полученный ответ в открытый файл
 	resultFile.Write(body)
 
-	// Дополнительно выводим ответ и тело ответа (в формате строки)
-	fmt.Println(res)
-	fmt.Println(string(body))
-
 }
