@@ -50,6 +50,16 @@ func main() {
 		fmt.Println(err)
 	}
 
+	// Открываем файл для записи
+	resultFile, err := os.Create("result.png")
+	if err != nil {
+		return
+	}
+	defer resultFile.Close()
+
+	// Записываем полученный ответ в открытый файл
+	resultFile.Write(body)
+
 	// Дополнительно выводим ответ и тело ответа (в формате строки)
 	fmt.Println(res)
 	fmt.Println(string(body))
