@@ -11,7 +11,7 @@ import (
 func main() {
 
 	// Куда будем отправлять запрос
-	url := "http://localhost:8081/watermark"
+	url := "http://localhost:8080/watermark"
 
 	// Открываем картинку, которую будем отправлять (она вообще есть?)
 	file, err := os.Open("perf1.png")
@@ -50,8 +50,14 @@ func main() {
 		fmt.Println(err)
 	}
 
-	// Дополнительно выводим ответ и тело ответа (в формате строки)
-	fmt.Println(res)
-	fmt.Println(string(body))
+	// Открываем файл для записи
+	resultFile, err := os.Create("result.png")
+	if err != nil {
+		return
+	}
+	defer resultFile.Close()
+
+	// Записываем полученный ответ в открытый файл
+	resultFile.Write(body)
 
 }
