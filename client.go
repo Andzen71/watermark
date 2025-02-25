@@ -51,7 +51,7 @@ func main() {
 	}
 
 	// Открываем файл для записи
-	resultFile, err := os.Create("result.png")
+	resultFile, err := os.Create("watermarkedImageCopy.jpg")
 	if err != nil {
 		return
 	}

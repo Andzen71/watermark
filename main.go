@@ -1,13 +1,14 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
+	"image"
 	"io"
-	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 
-	"example.com/watermark"
+	"github.com/disintegration/imaging"
 )
 
 func main() {
@@ -27,26 +28,105 @@ func WatermarkHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Получаем тело запроса (изображение)
-	imageData, err := ioutil.ReadAll(r.Body)
-	// image, _, err := r.FormFile("image") Это получает картинку из формы. А Выше из файла
+	// Открываем обрабатываемое изображение
+	postImage, err := imaging.Open("perf1.png")
 	if err != nil {
-		http.Error(w, "Failed to read request body", http.StatusBadRequest)
-		return
+		log.Fatalf("Failed to open image: %v", err)
 	}
 
-	// Применяем водяной знак
-	watermarkedImage, err := watermark.ApplyWatermark(bytes.NewReader(imageData))
+	// Открываем PNG с прозрачностью
+	watermark, err := imaging.Open("watermark.png")
 	if err != nil {
-		http.Error(w, "Failed to apply watermark", http.StatusInternalServerError)
-		return
+		log.Fatalf("Failed to open watermark: %v", err)
 	}
 
-	// Отправляем водяной знак в ответе
-	w.Header().Set("Content-Type", "image/png")
-	if _, err := io.Copy(w, watermarkedImage); err != nil {
-		http.Error(w, "Failed to send watermarked image", http.StatusInternalServerError)
-		return
+	// Параметры сетки
+	cols := 3
+	rows := 3
+	margin := 20
+	spacing := 10
+
+	// Рассчитываем доступную область для сетки
+	piWidth := postImage.Bounds().Dx()
+	piHeight := postImage.Bounds().Dy()
+
+	// Вычисляем максимальный размер для одного элемента
+	cellWidth := (piWidth - 2*margin - (cols-1)*spacing) / cols
+	cellHeight := (piHeight - 2*margin - (rows-1)*spacing) / rows
+
+	// Масштабируем PNG с сохранением пропорций
+	scaledWatermark := imaging.Fit(
+		watermark,
+		cellWidth,
+		cellHeight,
+		imaging.Lanczos,
+	)
+
+	// Рассчитываем смещение для центрирования
+	offsetX := (cellWidth - scaledWatermark.Bounds().Dx()) / 2
+	offsetY := (cellHeight - scaledWatermark.Bounds().Dy()) / 2
+
+	result := scaledWatermark
+	for row := 0; row < rows; row++ {
+		for col := 0; col < cols; col++ {
+			// Позиция ячейки
+			posX := margin + col*(cellWidth+spacing) + offsetX
+			posY := margin + row*(cellHeight+spacing) + offsetY
+
+			// Наложение масштабированного изображения
+			result = imaging.Overlay(
+				result,
+				scaledWatermark,
+				image.Pt(posX, posY),
+				0.5,
+			)
+		}
 	}
-	fmt.Println("finished request")
+
+	// Сохраняем результат
+	err = imaging.Save(result, "watermarkedImage.png")
+	if err != nil {
+		log.Fatalf("Failed to save result: %v", err)
+	}
+
+	// Открываем PNG-изображение
+	img, err := imaging.Open("watermarkedImage.png")
+	if err != nil {
+		log.Fatalf("Failed to open file: %v", err)
+	}
+
+	// Конвертируем в JPG с качеством 95%
+	err = imaging.Save(img, "watermarkedImage.jpg", imaging.JPEGQuality(95))
+	if err != nil {
+		log.Fatalf("Failed to save jpg: %v", err)
+	}
+
+	// Открыть исходный файл (PNG/JPG)
+	srcFile, err := os.Open("watermarkedImage.jpg")
+	if err != nil {
+		log.Fatal("Failed to open result:", err)
+	}
+	defer srcFile.Close()
+
+	// Создать целевой файл
+	dstFile, err := os.Create("watermarkedImageCopy.jpg")
+	if err != nil {
+		log.Fatal("Failed to create a file:", err)
+	}
+	defer dstFile.Close()
+
+	// Копирование через io.Copy
+	bytesCopied, err := io.Copy(dstFile, srcFile)
+	if err != nil {
+		log.Fatal("Failed to copy:", err)
+		log.Printf("Copied %d byte", bytesCopied)
+
+		// Отправляем  обработанное изображение в ответе
+		w.Header().Set("Content-Type", "image/png")
+		if _, err := io.Copy(w, dstFile); err != nil {
+			http.Error(w, "Failed to send result", http.StatusInternalServerError)
+			return
+		}
+		fmt.Println("finished request")
+	}
 }
